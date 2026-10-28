@@ -1,0 +1,31 @@
+
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Node.js / React
+node_modules/
+dist/
+coverage/
+
+# Java / Maven
+target/
+*.class
+
+# IntelliJ
+.idea/
+*.iml
+
+# VS Code local settings
+.vscode/
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
+
+# Build files
+build/
+out/
