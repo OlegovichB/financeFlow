@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 
 const summary = [
   {
@@ -18,6 +19,31 @@ const summary = [
 ]
 
 function App() {
+
+const [apiStatus, setApiStatus] = useState('Checking...')
+
+useEffect(() => {
+  async function checkBackend() {
+    try {
+      const response = await fetch('/api/v1/health')
+
+      if (!response.ok) {
+        throw new Error('Backend unavailable')
+      }
+
+      const data: { status: string } = await response.json()
+
+      setApiStatus(
+        data.status === 'UP' ? 'Connected' : 'Unavailable'
+      )
+    } catch {
+      setApiStatus('Disconnected')
+    }
+  }
+
+  void checkBackend()
+}, [])
+
   return (
     <div className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
@@ -37,6 +63,9 @@ function App() {
           <h2 className="text-3xl font-bold text-slate-900">
             Dashboard
           </h2>
+          <p className="mt-3 text-sm text-slate-500">
+  Backend API: <span className="font-semibold">{apiStatus}</span>
+</p>
           <p className="mt-2 text-slate-500">
             Welcome to FinanceFlow. Manage your finances
             in one place.
