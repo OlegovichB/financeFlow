@@ -8,6 +8,8 @@ import {
   useNavigate,
 } from 'react-router'
 
+import TransactionsPage from './pages/TransactionsPage'
+
 import AuthProvider from './context/AuthProvider'
 import { useAuth } from './context/useAuth'
 
@@ -116,11 +118,17 @@ function App() {
           <Route path="/register" element={<RegisterRoute />} />
 
           <Route element={<ProtectedRoute />}>
-            <Route
-              path="/dashboard"
-              element={<DashboardPage />}
-            />
-          </Route>
+          
+          <Route
+            path="/dashboard"
+            element={<DashboardPage />}
+          />
+
+          <Route
+            path="/transactions"
+            element={<TransactionsPage />}
+          />
+        </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

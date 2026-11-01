@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router'
 import { useAuth } from '../context/useAuth'
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router'
 
 const summary = [
   {
@@ -69,9 +70,28 @@ async function handleLogout() {
     <div className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-5">
-          <h1 className="text-2xl font-bold text-violet-700">
-            FinanceFlow
-          </h1>
+          <div className="flex items-center gap-6">
+      <h1 className="text-2xl font-bold text-violet-700">
+        FinanceFlow
+      </h1>
+
+      <nav className="flex gap-4 text-sm font-medium">
+        <Link
+          to="/dashboard"
+          aria-current="page"
+          className="text-violet-700"
+        >
+          Dashboard
+        </Link>
+
+        <Link
+          to="/transactions"
+          className="text-slate-600 hover:text-violet-700"
+        >
+          Transactions
+        </Link>
+      </nav>
+    </div>
 
           <div className="flex items-center gap-4">
   <span className="hidden text-sm text-slate-500 sm:inline">
