@@ -164,6 +164,13 @@ export default function DashboardPage() {
               >
                 Transactions
               </Link>
+
+              <Link
+                to="/categories"
+                className="text-slate-600 hover:text-violet-700"
+              >
+                Categories
+              </Link>
             </nav>
           </div>
 

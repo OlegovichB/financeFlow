@@ -34,4 +34,14 @@ public class CategoryController {
             .created(URI.create("/api/v1/categories/" + created.id()))
             .body(created);
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(
+        @PathVariable Long id
+    ) {
+        categoryService.delete(id);
+
+        return ResponseEntity.noContent().build();
+    }
+
 }

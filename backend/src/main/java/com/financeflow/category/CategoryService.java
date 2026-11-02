@@ -97,4 +97,23 @@ public class CategoryService {
 
         return CategoryResponse.from(saved);
     }
+
+
+    @Transactional
+    public void delete(Long categoryId) {
+        User user = getCurrentUser();
+
+        Category category = categoryRepository
+            .findByIdAndUser_Id(
+                categoryId,
+                user.getId()
+            )
+            .orElseThrow(() -> new ResponseStatusException(
+                HttpStatus.NOT_FOUND,
+                "Category not found"
+            ));
+
+        categoryRepository.delete(category);
+    }
+
 }

@@ -9,6 +9,7 @@ import {
 } from 'react-router'
 
 import TransactionsPage from './pages/TransactionsPage'
+import CategoriesPage from './pages/CategoriesPage'
 
 import AuthProvider from './context/AuthProvider'
 import { useAuth } from './context/useAuth'
@@ -129,6 +130,15 @@ function App() {
             element={<TransactionsPage />}
           />
         </Route>
+        
+        <Route element={<ProtectedRoute />}>
+
+        <Route path="/dashboard" element={<DashboardPage />} />
+
+        <Route path="/transactions" element={<TransactionsPage />} />
+        
+        <Route path="/categories" element={<CategoriesPage />} />
+      </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

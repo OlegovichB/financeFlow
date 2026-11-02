@@ -94,3 +94,30 @@ export async function createCategory(
 
   return response.json() as Promise<Category>
 }
+
+
+export async function deleteCategory(
+  categoryId: number
+): Promise<void> {
+  const csrfResponse = await fetch('/api/v1/auth/csrf', {
+    credentials: 'include',
+  })
+
+  await checkResponse(csrfResponse)
+
+  const csrfData: { token: string } =
+    await csrfResponse.json()
+
+  const response = await fetch(
+    `${API_BASE}/${categoryId}`,
+    {
+      method: 'DELETE',
+      credentials: 'include',
+      headers: {
+        'X-CSRF-TOKEN': csrfData.token,
+      },
+    }
+  )
+
+  await checkResponse(response)
+}
