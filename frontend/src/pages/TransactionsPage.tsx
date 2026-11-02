@@ -1,6 +1,7 @@
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router'
+
 
 import {
   createTransaction,
@@ -16,6 +17,12 @@ import type {
 
 import TransactionForm from '../components/TransactionForm'
 import { formatMoney } from '../utils/money'
+import {
+  DEFAULT_TRANSACTION_FILTERS,
+  filterAndSortTransactions,
+  getTransactionCategories,
+} from '../utils/transactionFilters'
+import type { TransactionFilters } from '../utils/transactionFilters'
 
 function formatDate(date: string): string {
   return new Intl.DateTimeFormat('en-SG', {
@@ -27,11 +34,46 @@ function formatDate(date: string): string {
 }
 
 export default function TransactionsPage() {
+  const formRef = useRef<HTMLDivElement>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionError, setActionError] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
+
+  const [filters, setFilters] = useState<TransactionFilters>(
+    DEFAULT_TRANSACTION_FILTERS
+  )
+
+  const availableCategories = useMemo(
+    () => getTransactionCategories(transactions),
+    [transactions]
+  )
+
+  const visibleTransactions = useMemo(
+    () => filterAndSortTransactions(transactions, filters),
+    [transactions, filters]
+  )
+
+  const invalidDateRange = Boolean(
+    filters.dateFrom && filters.dateTo && filters.dateFrom > filters.dateTo
+  )
+
+  const activeFilters = Boolean(
+    filters.search ||
+    filters.type !== 'ALL' ||
+    filters.category ||
+    filters.dateFrom ||
+    filters.dateTo ||
+    filters.sort !== 'NEWEST'
+  )
+
+  function updateFilter<K extends keyof TransactionFilters>(
+    name: K,
+    value: TransactionFilters[K]
+  ) {
+    setFilters((previous) => ({ ...previous, [name]: value }))
+  }
 
   const [showForm, setShowForm] = useState(false)
   const [editingTransaction, setEditingTransaction] =
@@ -92,6 +134,15 @@ export default function TransactionsPage() {
     setActionError('')
     setShowForm(true)
   }
+
+  useEffect(() => {
+  if (showForm) {
+    formRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
+}, [showForm, editingTransaction])
 
   function startEditing(transaction: Transaction) {
     setEditingTransaction(transaction)
@@ -192,7 +243,7 @@ export default function TransactionsPage() {
         </div>
 
         {showForm && (
-          <div className="mb-8">
+          <div ref={formRef} className="mb-8 scroll-mt-6">
             <TransactionForm
               key={editingTransaction?.id ?? 'new'}
               transaction={editingTransaction}
@@ -208,6 +259,131 @@ export default function TransactionsPage() {
           </p>
         )}
 
+        <section
+          aria-label="Filter transactions"
+          className="mb-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+        >
+          <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold text-slate-900">
+                Filter Transactions
+              </h2>
+              <p className="mt-1 text-sm text-slate-500">
+                Search by category or description and narrow down the results.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setFilters(DEFAULT_TRANSACTION_FILTERS)}
+              disabled={!activeFilters}
+              className="cursor-pointer text-sm font-medium text-violet-700 hover:underline disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              Clear Filters
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+              <label htmlFor="filter-search" className="mb-2 block text-sm font-medium text-slate-700">
+                Search
+              </label>
+              <input
+                id="filter-search"
+                type="search"
+                value={filters.search}
+                onChange={(event) => updateFilter('search', event.target.value)}
+                placeholder="e.g. groceries, salary..."
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none focus:border-violet-600 focus:ring-2 focus:ring-violet-100"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="filter-type" className="mb-2 block text-sm font-medium text-slate-700">
+                Type
+              </label>
+              <select
+                id="filter-type"
+                value={filters.type}
+                onChange={(event) => updateFilter('type', event.target.value as TransactionFilters['type'])}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-violet-600 focus:ring-2 focus:ring-violet-100"
+              >
+                <option value="ALL">All types</option>
+                <option value="INCOME">Income</option>
+                <option value="EXPENSE">Expense</option>
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="filter-category" className="mb-2 block text-sm font-medium text-slate-700">
+                Category
+              </label>
+              <select
+                id="filter-category"
+                value={filters.category}
+                onChange={(event) => updateFilter('category', event.target.value)}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-violet-600 focus:ring-2 focus:ring-violet-100"
+              >
+                <option value="">All categories</option>
+                {availableCategories.map((category) => (
+                  <option key={category} value={category}>{category}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label htmlFor="filter-from" className="mb-2 block text-sm font-medium text-slate-700">
+                From date
+              </label>
+              <input
+                id="filter-from"
+                type="date"
+                value={filters.dateFrom}
+                onChange={(event) => updateFilter('dateFrom', event.target.value)}
+                aria-invalid={invalidDateRange}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none focus:border-violet-600 focus:ring-2 focus:ring-violet-100"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="filter-to" className="mb-2 block text-sm font-medium text-slate-700">
+                To date
+              </label>
+              <input
+                id="filter-to"
+                type="date"
+                value={filters.dateTo}
+                min={filters.dateFrom || undefined}
+                onChange={(event) => updateFilter('dateTo', event.target.value)}
+                aria-invalid={invalidDateRange}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2.5 outline-none focus:border-violet-600 focus:ring-2 focus:ring-violet-100"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="filter-sort" className="mb-2 block text-sm font-medium text-slate-700">
+                Sort by
+              </label>
+              <select
+                id="filter-sort"
+                value={filters.sort}
+                onChange={(event) => updateFilter('sort', event.target.value as TransactionFilters['sort'])}
+                className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 outline-none focus:border-violet-600 focus:ring-2 focus:ring-violet-100"
+              >
+                <option value="NEWEST">Newest first</option>
+                <option value="OLDEST">Oldest first</option>
+                <option value="AMOUNT_HIGH">Highest amount</option>
+                <option value="AMOUNT_LOW">Lowest amount</option>
+              </select>
+            </div>
+          </div>
+
+          {invalidDateRange && (
+            <p role="alert" className="mt-4 text-sm text-rose-600">
+              From date cannot be later than To date.
+            </p>
+          )}
+        </section>
+
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="flex items-center justify-between border-b border-slate-200 px-6 py-5">
             <h2 className="text-lg font-semibold text-slate-900">
@@ -216,7 +392,7 @@ export default function TransactionsPage() {
 
             {!isLoading && !error && (
               <span className="text-sm text-slate-500">
-                {transactions.length} transactions
+                Showing {visibleTransactions.length} of {transactions.length} transactions
               </span>
             )}
           </div>
@@ -247,9 +423,25 @@ export default function TransactionsPage() {
                 Click Add Transaction to get started.
               </p>
             </div>
+          ) : visibleTransactions.length === 0 ? (
+            <div className="p-12 text-center">
+              <h3 className="text-lg font-semibold text-slate-800">
+                No matching transactions
+              </h3>
+              <p className="mt-2 text-slate-500">
+                Try changing or clearing your filters.
+              </p>
+              <button
+                type="button"
+                onClick={() => setFilters(DEFAULT_TRANSACTION_FILTERS)}
+                className="mt-4 cursor-pointer font-medium text-violet-700 hover:underline"
+              >
+                Clear Filters
+              </button>
+            </div>
           ) : (
             <ul className="divide-y divide-slate-100">
-              {transactions.map((transaction) => {
+              {visibleTransactions.map((transaction) => {
                 const isIncome = transaction.type === 'INCOME'
 
                 return (
