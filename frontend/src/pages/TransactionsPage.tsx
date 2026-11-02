@@ -15,13 +15,7 @@ import type {
 } from '../api/transactions'
 
 import TransactionForm from '../components/TransactionForm'
-
-function formatAmount(amount: number): string {
-  return new Intl.NumberFormat('en-SG', {
-    style: 'currency',
-    currency: 'SGD',
-  }).format(amount)
-}
+import { formatMoney } from '../utils/money'
 
 function formatDate(date: string): string {
   return new Intl.DateTimeFormat('en-SG', {
@@ -297,7 +291,7 @@ export default function TransactionsPage() {
                           }`}
                         >
                           {isIncome ? '+' : '−'}
-                          {formatAmount(transaction.amount)}
+                          {formatMoney(transaction.amount)}
                         </p>
                         <span className="text-xs font-medium text-slate-500">
                           {transaction.type}

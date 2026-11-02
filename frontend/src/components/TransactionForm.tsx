@@ -2,6 +2,8 @@
 import { useState } from 'react'
 import type { FormEvent } from 'react'
 
+import { toCents } from '../utils/money'
+
 import type {
   Transaction,
   TransactionRequest,
@@ -14,6 +16,16 @@ interface TransactionFormProps {
   onCancel: () => void
 }
 
+// Date inputs need a reliable YYYY-MM-DD value in the user's local timezone.
+function getTodayDate(): string {
+  const today = new Date()
+  const year = today.getFullYear()
+  const month = String(today.getMonth() + 1).padStart(2, '0')
+  const day = String(today.getDate()).padStart(2, '0')
+
+  return `${year}-${month}-${day}`
+}
+
 export default function TransactionForm({
   transaction,
   onSave,
@@ -22,18 +34,22 @@ export default function TransactionForm({
   const [type, setType] = useState<TransactionType>(
     transaction?.type ?? 'EXPENSE'
   )
+
   const [amount, setAmount] = useState(
-    transaction ? String(transaction.amount) : ''
+    transaction?.amount ?? ''
   )
+
   const [category, setCategory] = useState(
     transaction?.category ?? ''
   )
+
   const [description, setDescription] = useState(
     transaction?.description ?? ''
   )
+
   const [date, setDate] = useState(
     transaction?.transactionDate ??
-      new Date().toLocaleDateString('en-CA')
+      getTodayDate()
   )
 
   const [error, setError] = useState('')
@@ -43,24 +59,26 @@ export default function TransactionForm({
     event.preventDefault()
     setError('')
 
+    // Validate amount using BigInt cents
     const normalizedAmount = amount.trim()
 
-    if (!/^\d+(\.\d{1,2})?$/.test(normalizedAmount)) {
-      setError('Enter an amount with up to two decimal places.')
+    let amountInCents: bigint
+
+    try {
+      amountInCents = toCents(normalizedAmount)
+    } catch {
+      setError(
+        'Enter a valid amount with up to two decimal places.'
+      )
       return
     }
 
-    const numericAmount = Number(normalizedAmount)
-
-    if (
-      !Number.isFinite(numericAmount) ||
-      numericAmount <= 0 ||
-      numericAmount >= 10 ** 13
-    ) {
-      setError('Enter a valid positive amount.')
+    if (amountInCents <= 0n) {
+      setError('Amount must be greater than zero.')
       return
     }
 
+    // Validate category
     if (!category.trim()) {
       setError('Category is required.')
       return
@@ -71,19 +89,22 @@ export default function TransactionForm({
       return
     }
 
+    // Validate description
     if (description.length > 255) {
       setError('Description must be at most 255 characters.')
       return
     }
 
+    // Validate date
     if (!date) {
       setError('Transaction date is required.')
       return
     }
 
+    // Prepare request data
     const data: TransactionRequest = {
       type,
-      amount: numericAmount,
+      amount: normalizedAmount,
       category: category.trim(),
       description: description.trim() || null,
       transactionDate: date,
@@ -144,6 +165,7 @@ export default function TransactionForm({
           >
             Amount (SGD)
           </label>
+
           <input
             id="transaction-amount"
             type="text"
@@ -164,6 +186,7 @@ export default function TransactionForm({
           >
             Category
           </label>
+
           <input
             id="transaction-category"
             type="text"
@@ -184,6 +207,7 @@ export default function TransactionForm({
           >
             Date
           </label>
+
           <input
             id="transaction-date"
             type="date"
@@ -202,6 +226,7 @@ export default function TransactionForm({
           >
             Description (optional)
           </label>
+
           <input
             id="transaction-description"
             type="text"

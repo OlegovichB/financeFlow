@@ -1,12 +1,13 @@
 
 const API_BASE = '/api/v1/transactions'
 
+
 export type TransactionType = 'INCOME' | 'EXPENSE'
 
 export interface Transaction {
   id: number
   type: TransactionType
-  amount: number
+  amount: string
   category: string
   description: string | null
   transactionDate: string
@@ -16,10 +17,17 @@ export interface Transaction {
 
 export interface TransactionRequest {
   type: TransactionType
-  amount: number
+  amount: string
   category: string
   description: string | null
   transactionDate: string
+}
+
+
+export interface ApiError {
+  code?: string
+  message?: string
+  fieldErrors?: Record<string, string>
 }
 
 async function getCsrfToken(): Promise<string> {
@@ -53,17 +61,50 @@ async function mutationRequest(
   })
 }
 
+
 async function ensureSuccess(response: Response): Promise<void> {
   if (response.ok) {
     return
   }
 
+  let apiError: ApiError | null = null
+
+  try {
+    apiError = (await response.json()) as ApiError
+  } catch {
+    // Some errors, including Spring Security filter
+    // responses, may not include a JSON body.
+  }
+
   if (response.status === 401) {
-    throw new Error('Session expired. Please sign in again.')
+    throw new Error(
+      'Your session has expired. Please sign in again.'
+    )
   }
 
   if (response.status === 403) {
-    throw new Error('Request was rejected. Please refresh and try again.')
+    throw new Error(
+      'Access denied. Please refresh and try again.'
+    )
+  }
+
+  if (apiError?.fieldErrors) {
+    const fieldMessages = Object.values(
+      apiError.fieldErrors
+    ).filter((message) => typeof message === 'string')
+
+    if (fieldMessages.length > 0) {
+      throw new Error(fieldMessages.join('. '))
+    }
+  }
+
+  if (
+    response.status >= 400 &&
+    response.status < 500 &&
+    typeof apiError?.message === 'string' &&
+    apiError.message.trim()
+  ) {
+    throw new Error(apiError.message)
   }
 
   if (response.status === 404) {
@@ -74,8 +115,9 @@ async function ensureSuccess(response: Response): Promise<void> {
     throw new Error('Invalid transaction details')
   }
 
-  throw new Error('Transaction request failed')
+  throw new Error('Unable to complete the request')
 }
+
 
 export async function getTransactions(): Promise<Transaction[]> {
   const response = await fetch(API_BASE, {

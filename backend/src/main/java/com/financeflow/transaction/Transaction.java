@@ -1,5 +1,7 @@
 
 package com.financeflow.transaction;
+import org.hibernate.annotations.Generated;
+import org.hibernate.generator.EventType;
 
 import com.financeflow.user.User;
 import jakarta.persistence.*;
@@ -7,6 +9,8 @@ import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+
+
 
 @Entity
 @Table(name = "transactions")
@@ -36,6 +40,7 @@ public class Transaction {
     @Column(name = "transaction_date", nullable = false)
     private LocalDate transactionDate;
 
+    @Generated(event = EventType.INSERT)
     @Column(
         name = "created_at",
         nullable = false,
@@ -44,10 +49,12 @@ public class Transaction {
     )
     private OffsetDateTime createdAt;
 
+    @Generated(event = {EventType.INSERT, EventType.UPDATE})
     @Column(
         name = "updated_at",
         nullable = false,
-        insertable = false
+        insertable = false,
+        updatable = false
     )
     private OffsetDateTime updatedAt;
 

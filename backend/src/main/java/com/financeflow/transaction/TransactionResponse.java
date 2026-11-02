@@ -5,9 +5,12 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 public record TransactionResponse(
     Long id,
     TransactionType type,
+    @JsonFormat(shape = JsonFormat.Shape.STRING)
     BigDecimal amount,
     String category,
     String description,
