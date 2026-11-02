@@ -13,6 +13,7 @@ import CategoriesPage from './pages/CategoriesPage'
 
 import AuthProvider from './context/AuthProvider'
 import { useAuth } from './context/useAuth'
+import AnalyticsPage from './pages/AnalyticsPage'
 
 import ProtectedRoute from './components/ProtectedRoute'
 
@@ -132,6 +133,8 @@ function App() {
         </Route>
         
         <Route element={<ProtectedRoute />}>
+
+        <Route path="/analytics" element={<AnalyticsPage />} />
 
         <Route path="/dashboard" element={<DashboardPage />} />
 

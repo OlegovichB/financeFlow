@@ -166,6 +166,13 @@ export default function DashboardPage() {
               </Link>
 
               <Link
+                to="/analytics"
+                className="text-slate-600 hover:text-violet-700"
+              >
+                Analytics
+              </Link>
+
+              <Link
                 to="/categories"
                 className="text-slate-600 hover:text-violet-700"
               >
