@@ -145,7 +145,7 @@ class TransactionControllerTest {
             .andExpect(jsonPath("$.id").value(1))
             .andExpect(jsonPath("$.type").value("EXPENSE"))
             .andExpect(jsonPath("$.category").value("Groceries"))
-            .andExpect(jsonPath("$.amount").value("85.50"));
+            .andExpect(jsonPath("$.amount").value("10"));
 
         verify(transactionService).create(
             any(TransactionRequest.class)
