@@ -1,0 +1,71 @@
+
+name: financeflow-deploy
+
+services:
+  postgres:
+    image: postgres:18
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: financeflow
+      POSTGRES_USER: financeflow
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+
+    volumes:
+      - postgres_data:/var/lib/postgresql
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U financeflow -d financeflow
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  backend:
+    build:
+      context: ./backend
+
+    restart: unless-stopped
+
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+      DB_URL: jdbc:postgresql://postgres:5432/financeflow
+      DB_USERNAME: financeflow
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+
+      SERVER_SERVLET_SESSION_COOKIE_SECURE: "true"
+      SERVER_FORWARD_HEADERS_STRATEGY: framework
+
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+
+    restart: unless-stopped
+
+    environment:
+      FINANCEFLOW_DOMAIN: ${FINANCEFLOW_DOMAIN:?Domain is required}
+
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+
+    volumes:
+      - ./frontend/Caddyfile.production:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+    depends_on:
+      - backend
+
+volumes:
+  postgres_data:
+  caddy_data:
+  caddy_config:

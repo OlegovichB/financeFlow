@@ -1,0 +1,16 @@
+
+{$FINANCEFLOW_DOMAIN} {
+    encode zstd gzip
+
+    # Forward API requests to Spring Boot
+    handle /api/* {
+        reverse_proxy backend:8080
+    }
+
+    # Serve React SPA
+    handle {
+        root * /srv
+        try_files {path} /index.html
+        file_server
+    }
+}
