@@ -311,7 +311,7 @@ export default function TransactionForm({
             inputMode="decimal"
             value={amount}
             onChange={(event) => setAmount(event.target.value)}
-            placeholder="85.50"
+            placeholder="10"
             required
             disabled={isBusy}
             className={inputClass}

@@ -72,7 +72,7 @@ class TransactionOwnershipIntegrationTest {
             new Transaction(
                 userA,
                 TransactionType.EXPENSE,
-                new BigDecimal("85.00"),
+                new BigDecimal("10"),
                 "Groceries",
                 "Daniil shopping",
                 LocalDate.of(2026, 11, 1)

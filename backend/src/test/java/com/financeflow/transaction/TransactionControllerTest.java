@@ -45,7 +45,7 @@ class TransactionControllerTest {
     private static final String VALID_JSON = """
         {
           "type": "EXPENSE",
-          "amount": 85.50,
+          "amount": 10,
           "category": "Groceries",
           "description": "Weekly shopping",
           "transactionDate": "2026-11-01"
@@ -56,7 +56,7 @@ class TransactionControllerTest {
         return new TransactionResponse(
             1L,
             TransactionType.EXPENSE,
-            new BigDecimal("85.50"),
+            new BigDecimal("10"),
             "Groceries",
             "Weekly shopping",
             LocalDate.of(2026, 11, 1),
