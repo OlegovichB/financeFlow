@@ -9,6 +9,44 @@ FinanceFlow helps users manage income and expenses, organize transactions into c
 
 ## Features
 
+
+## Screenshots
+
+### Dashboard
+
+Overview of total income, expenses, net balance,
+and recent transactions.
+
+![FinanceFlow Dashboard](docs/screenshots/dashboard.png)
+
+### Transactions
+
+Manage income and expense records with filtering
+and sorting functionality.
+
+![FinanceFlow Transactions](docs/screenshots/transactions.png)
+
+### Financial Analytics
+
+Explore monthly financial trends and spending
+breakdowns by category.
+
+![FinanceFlow Analytics](docs/screenshots/analytics.png)
+
+### Monthly Budgets
+
+Set category budgets and track spending progress.
+
+![FinanceFlow Budgets](docs/screenshots/budgets.png)
+
+### Settings
+
+Customize analytics preferences and application
+display options.
+
+![FinanceFlow Settings](docs/screenshots/settings.png)
+
+
 ### Authentication & Security
 - User registration and login
 - Session-based authentication with Spring Security
