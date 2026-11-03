@@ -12,6 +12,12 @@ import {
   calculateCategorySpending,
 } from '../utils/analytics'
 
+import {
+  getAnalyticsPeriodPreference,
+  isAnalyticsPeriod,
+  saveAnalyticsPeriodPreference,
+} from '../utils/preferences'
+
 import AppNavigation from '../components/AppNavigation'
 
 import { formatCents } from '../utils/money'
@@ -21,7 +27,20 @@ export default function AnalyticsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
-  const [monthCount, setMonthCount] = useState(6)
+  const [monthCount, setMonthCount] = useState(
+  getAnalyticsPeriodPreference
+  )
+
+  function handlePeriodChange(value: string) {
+    const period = Number(value)
+
+    if (!isAnalyticsPeriod(period)) {
+      return
+    }
+
+    setMonthCount(period)
+    saveAnalyticsPeriodPreference(period)
+  }
 
   useEffect(() => {
     let cancelled = false
@@ -114,7 +133,7 @@ export default function AnalyticsPage() {
           </Link>
 
           <AppNavigation />
-          
+
         </div>
       </header>
 
@@ -142,7 +161,7 @@ export default function AnalyticsPage() {
               id="analytics-period"
               value={monthCount}
               onChange={(event) =>
-                setMonthCount(Number(event.target.value))
+                handlePeriodChange(event.target.value)
               }
               className="rounded-lg border border-slate-300 bg-white px-4 py-3 outline-none focus:border-violet-600"
             >

@@ -13,6 +13,7 @@ const navigationItems: NavigationItem[] = [
   { label: 'Categories', path: '/categories' },
   { label: 'Analytics', path: '/analytics' },
   { label: 'Budgets', path: '/budgets' },
+  { label: 'Settings', path: '/settings' },
 ]
 
 export default function AppNavigation() {

@@ -15,7 +15,7 @@ import AuthProvider from './context/AuthProvider'
 import { useAuth } from './context/useAuth'
 import AnalyticsPage from './pages/AnalyticsPage'
 import BudgetsPage from './pages/BudgetsPage'
-
+import SettingsPage from './pages/SettingsPage'
 import ProtectedRoute from './components/ProtectedRoute'
 
 import LoginPage from './pages/LoginPage'
@@ -132,6 +132,8 @@ function App() {
             element={<TransactionsPage />}
           />
         </Route>
+
+        <Route path="/settings" element={<SettingsPage />} />
         
         <Route element={<ProtectedRoute />}>
 
