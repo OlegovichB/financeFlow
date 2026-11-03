@@ -140,6 +140,13 @@ export default function AnalyticsPage() {
             >
               Analytics
             </Link>
+
+            <Link
+              to="/budgets"
+              className="text-slate-600 hover:text-violet-700"
+            >
+              Budgets
+            </Link>
           </nav>
         </div>
       </header>
