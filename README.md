@@ -7,6 +7,10 @@ FinanceFlow helps users manage income and expenses, organize transactions into c
 
 **Project Status:** Core application completed | Local deployment available with Docker | Public demo not yet deployed
 
+
+[![FinanceFlow CI](https://github.com/OlegovichB/financeFlow/actions/workflows/ci.yml/badge.svg)](https://github.com/OlegovichB/financeFlow/actions/workflows/ci.yml)
+
+
 ## Features
 
 
