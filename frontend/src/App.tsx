@@ -8,19 +8,20 @@ import {
   useNavigate,
 } from 'react-router'
 
-import TransactionsPage from './pages/TransactionsPage'
-import CategoriesPage from './pages/CategoriesPage'
-
 import AuthProvider from './context/AuthProvider'
 import { useAuth } from './context/useAuth'
-import AnalyticsPage from './pages/AnalyticsPage'
-import BudgetsPage from './pages/BudgetsPage'
-import SettingsPage from './pages/SettingsPage'
+
 import ProtectedRoute from './components/ProtectedRoute'
+import AppLayout from './components/AppLayout'
 
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import DashboardPage from './pages/DashboardPage'
+import TransactionsPage from './pages/TransactionsPage'
+import CategoriesPage from './pages/CategoriesPage'
+import AnalyticsPage from './pages/AnalyticsPage'
+import BudgetsPage from './pages/BudgetsPage'
+import SettingsPage from './pages/SettingsPage'
 
 function LoginRoute() {
   const { user, isLoading, signIn } = useAuth()
@@ -91,9 +92,11 @@ function HomeRoute() {
     return (
       <div className="p-8 text-center">
         <p role="alert">{error}</p>
+
         <button
+          type="button"
           onClick={() => void retry()}
-          className="mt-4 text-violet-700 underline"
+          className="mt-4 cursor-pointer text-violet-700 underline"
         >
           Try again
         </button>
@@ -120,33 +123,22 @@ function App() {
 
           <Route path="/register" element={<RegisterRoute />} />
 
+          {/* All private pages share one layout */}
           <Route element={<ProtectedRoute />}>
-          
-          <Route
-            path="/dashboard"
-            element={<DashboardPage />}
-          />
+            <Route element={<AppLayout />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
 
-          <Route
-            path="/transactions"
-            element={<TransactionsPage />}
-          />
-        </Route>
+              <Route path="/transactions" element={<TransactionsPage />} />
 
-        <Route path="/settings" element={<SettingsPage />} />
-        
-        <Route element={<ProtectedRoute />}>
+              <Route path="/categories" element={<CategoriesPage />} />
 
-        <Route path="/analytics" element={<AnalyticsPage />} />
+              <Route path="/analytics" element={<AnalyticsPage />} />
 
-        <Route path="/budgets" element={<BudgetsPage />} />
+              <Route path="/budgets" element={<BudgetsPage />} />
 
-        <Route path="/dashboard" element={<DashboardPage />} />
-
-        <Route path="/transactions" element={<TransactionsPage />} />
-        
-        <Route path="/categories" element={<CategoriesPage />} />
-      </Route>
+              <Route path="/settings" element={<SettingsPage />} />
+            </Route>
+          </Route>
 
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

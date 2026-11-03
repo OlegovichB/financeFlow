@@ -1,8 +1,5 @@
 
 import { useState } from 'react'
-import { Link } from 'react-router'
-
-import AppNavigation from '../components/AppNavigation'
 
 import {
   getAnalyticsPeriodPreference,
@@ -62,19 +59,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col items-stretch gap-4 px-4 py-4 md:flex-row md:flex-wrap md:items-center md:justify-between md:px-6 md:py-5">
-          <Link
-            to="/dashboard"
-            className="text-2xl font-bold text-violet-700"
-          >
-            FinanceFlow
-          </Link>
-
-          <AppNavigation />
-        </div>
-      </header>
-
+      
       <main className="mx-auto max-w-4xl px-4 py-6 sm:px-6 sm:py-10">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-slate-900">

@@ -1,6 +1,6 @@
 
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link } from 'react-router'
 
 import {
   formatCents,
@@ -13,7 +13,6 @@ import type { Transaction } from '../api/transactions'
 
 import { useAuth } from '../context/useAuth'
 
-import AppNavigation from '../components/AppNavigation'
 
 function formatDate(date: string): string {
   return new Intl.DateTimeFormat('en-SG', {
@@ -25,15 +24,12 @@ function formatDate(date: string): string {
 }
 
 export default function DashboardPage() {
-  const { user, signOut } = useAuth()
-  const navigate = useNavigate()
+  const { user } = useAuth()
 
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [apiStatus, setApiStatus] = useState('Checking...')
-  const [isLoggingOut, setIsLoggingOut] = useState(false)
-  const [logoutError, setLogoutError] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -125,60 +121,11 @@ export default function DashboardPage() {
       .slice(0, 5)
   }, [transactions])
 
-  async function handleLogout() {
-    setLogoutError('')
-    setIsLoggingOut(true)
-
-    try {
-      await signOut()
-      navigate('/login', { replace: true })
-    } catch {
-      setLogoutError('Unable to sign out. Please try again.')
-    } finally {
-      setIsLoggingOut(false)
-    }
-  }
+  
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5">
-          <div className="flex flex-wrap items-center gap-6">
-            <Link
-              to="/dashboard"
-              className="text-2xl font-bold text-violet-700"
-            >
-              FinanceFlow
-            </Link>
-
-            <AppNavigation />
-            
-          </div>
-
-          <div className="flex items-center gap-4">
-            <span className="text-sm text-slate-500">
-              {user?.name}
-            </span>
-
-            <button
-              type="button"
-              onClick={() => void handleLogout()}
-              disabled={isLoggingOut}
-              className="cursor-pointer rounded-lg border border-violet-200 px-4 py-2 text-sm font-medium text-violet-700 hover:bg-violet-50 disabled:opacity-60"
-            >
-              {isLoggingOut ? 'Signing out...' : 'Logout'}
-            </button>
-          </div>
-        </div>
-      </header>
-
       <main className="mx-auto max-w-6xl px-6 py-10">
-        {logoutError && (
-          <p role="alert" className="mb-5 text-sm text-rose-600">
-            {logoutError}
-          </p>
-        )}
-
         <section className="mb-10">
           <h1 className="text-3xl font-bold text-slate-900">
             Dashboard

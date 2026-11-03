@@ -1,6 +1,5 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link } from 'react-router'
 
 
 import {
@@ -10,7 +9,6 @@ import {
   updateTransaction,
 } from '../api/transactions'
 
-import AppNavigation from '../components/AppNavigation'
 
 import type {
   Transaction,
@@ -196,20 +194,6 @@ export default function TransactionsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5">
-          <Link
-            to="/dashboard"
-            className="text-2xl font-bold text-violet-700"
-          >
-            FinanceFlow
-          </Link>
-
-          <AppNavigation />
-          
-        </div>
-      </header>
-
       <main className="mx-auto max-w-6xl px-6 py-10">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
           <div>

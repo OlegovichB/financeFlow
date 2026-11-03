@@ -1,7 +1,6 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link } from 'react-router'
 
 import {
   createBudget,
@@ -25,8 +24,6 @@ import {
   calculateBudgetSummary,
   getProgressBarWidth,
 } from '../utils/budgetProgress'
-
-import AppNavigation from '../components/AppNavigation'
 
 import { formatCents, toCents } from '../utils/money'
 
@@ -375,21 +372,6 @@ export default function BudgetsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Navigation */}
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-col items-stretch gap-4 px-4 py-4 md:flex-row md:flex-wrap md:items-center md:justify-between md:px-6 md:py-5"> 
-
-          <Link
-            to="/dashboard"
-            className="text-2xl font-bold text-violet-700"
-          >
-            FinanceFlow
-          </Link>
-
-          <AppNavigation />
-
-        </div>
-      </header>
 
       <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
         {/* Page heading and month selector */}

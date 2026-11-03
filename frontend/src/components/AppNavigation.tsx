@@ -7,14 +7,15 @@ interface NavigationItem {
   path: string
 }
 
+
 const navigationItems: NavigationItem[] = [
   { label: 'Dashboard', path: '/dashboard' },
   { label: 'Transactions', path: '/transactions' },
   { label: 'Categories', path: '/categories' },
   { label: 'Analytics', path: '/analytics' },
   { label: 'Budgets', path: '/budgets' },
-  { label: 'Settings', path: '/settings' },
 ]
+
 
 export default function AppNavigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)

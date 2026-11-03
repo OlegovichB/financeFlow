@@ -1,16 +1,12 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import type { FormEvent } from 'react'
-
-import { Link } from 'react-router'
-
 import {
   createCategory,
   deleteCategory,
   getCategories,
 } from '../api/categories'
 
-import AppNavigation from '../components/AppNavigation'
 
 import type { Category } from '../api/categories'
 import type { TransactionType } from '../api/transactions'
@@ -170,21 +166,6 @@ export default function CategoriesPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Navigation */}
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5">
-          <Link
-            to="/dashboard"
-            className="text-2xl font-bold text-violet-700"
-          >
-            FinanceFlow
-          </Link>
-
-          <AppNavigation />
-
-        </div>
-      </header>
-
       <main className="mx-auto max-w-4xl px-6 py-10">
         {/* Heading */}
         <div className="mb-8">
