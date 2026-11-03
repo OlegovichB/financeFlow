@@ -10,6 +10,8 @@ import {
   updateTransaction,
 } from '../api/transactions'
 
+import AppNavigation from '../components/AppNavigation'
+
 import type {
   Transaction,
   TransactionRequest,
@@ -203,29 +205,8 @@ export default function TransactionsPage() {
             FinanceFlow
           </Link>
 
-          <nav className="flex gap-5 text-sm font-medium">
-            <Link
-              to="/dashboard"
-              className="text-slate-600 hover:text-violet-700"
-            >
-              Dashboard
-            </Link>
-
-            <Link
-              to="/transactions"
-              aria-current="page"
-              className="text-violet-700"
-            >
-              Transactions
-            </Link>
-
-            <Link
-              to="/budgets"
-              className="text-slate-600 hover:text-violet-700"
-            >
-              Budgets
-            </Link>
-          </nav>
+          <AppNavigation />
+          
         </div>
       </header>
 

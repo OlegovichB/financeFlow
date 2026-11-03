@@ -13,6 +13,8 @@ import type { Transaction } from '../api/transactions'
 
 import { useAuth } from '../context/useAuth'
 
+import AppNavigation from '../components/AppNavigation'
+
 function formatDate(date: string): string {
   return new Intl.DateTimeFormat('en-SG', {
     day: '2-digit',
@@ -149,43 +151,8 @@ export default function DashboardPage() {
               FinanceFlow
             </Link>
 
-            <nav className="flex gap-4 text-sm font-medium">
-              <Link
-                to="/dashboard"
-                aria-current="page"
-                className="text-violet-700"
-              >
-                Dashboard
-              </Link>
-
-              <Link
-                to="/transactions"
-                className="text-slate-600 hover:text-violet-700"
-              >
-                Transactions
-              </Link>
-
-              <Link
-                to="/analytics"
-                className="text-slate-600 hover:text-violet-700"
-              >
-                Analytics
-              </Link>
-
-              <Link
-                to="/categories"
-                className="text-slate-600 hover:text-violet-700"
-              >
-                Categories
-              </Link>
-
-              <Link
-                to="/budgets"
-                className="text-slate-600 hover:text-violet-700"
-              >
-                Budgets
-              </Link>
-            </nav>
+            <AppNavigation />
+            
           </div>
 
           <div className="flex items-center gap-4">

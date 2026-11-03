@@ -15,7 +15,19 @@ import type { Budget } from '../api/budgets'
 import { getCategories as getSavedCategories } from '../api/categories'
 import type { Category } from '../api/categories'
 
+import { getTransactions } from '../api/transactions'
+import type { Transaction } from '../api/transactions'
+
 import { getCategories as getDefaultCategories } from '../constants/categories'
+
+import {
+  calculateBudgetProgress,
+  calculateBudgetSummary,
+  getProgressBarWidth,
+} from '../utils/budgetProgress'
+
+import AppNavigation from '../components/AppNavigation'
+
 import { formatCents, toCents } from '../utils/money'
 
 function getCurrentMonth(): string {
@@ -41,30 +53,29 @@ function formatMonth(month: string): string {
 }
 
 export default function BudgetsPage() {
-  const [selectedMonth, setSelectedMonth] = useState(
-    getCurrentMonth
-  )
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth)
 
   const [budgets, setBudgets] = useState<Budget[]>([])
-  const [savedCategories, setSavedCategories] =
-    useState<Category[]>([])
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [savedCategories, setSavedCategories] = useState<Category[]>([])
 
   const [category, setCategory] = useState('')
   const [amount, setAmount] = useState('')
 
-  const [editingBudget, setEditingBudget] =
-    useState<Budget | null>(null)
+  const [editingBudget, setEditingBudget] = useState<Budget | null>(null)
 
   const [isLoading, setIsLoading] = useState(true)
+  const [isLoadingTransactions, setIsLoadingTransactions] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [deletingId, setDeletingId] =
-    useState<number | null>(null)
+
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   const [error, setError] = useState('')
+  const [transactionsError, setTransactionsError] = useState('')
   const [formError, setFormError] = useState('')
   const [success, setSuccess] = useState('')
 
-  // Load saved categories once.
+  // Load saved categories
   useEffect(() => {
     let cancelled = false
 
@@ -93,11 +104,13 @@ export default function BudgetsPage() {
     }
   }, [])
 
-  // Load budgets when the selected month changes.
+  // Load budgets for selected month
   useEffect(() => {
     let cancelled = false
 
     async function loadBudgets() {
+      setIsLoading(true)
+
       try {
         const data = await getBudgets(
           toBackendMonth(selectedMonth)
@@ -129,6 +142,43 @@ export default function BudgetsPage() {
     }
   }, [selectedMonth])
 
+  // Load all transactions once when page opens
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadTransactions() {
+      setIsLoadingTransactions(true)
+      setTransactionsError('')
+
+      try {
+        const data = await getTransactions()
+
+        if (!cancelled) {
+          setTransactions(data)
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setTransactionsError(
+            err instanceof Error
+              ? err.message
+              : 'Unable to load spending data.'
+          )
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoadingTransactions(false)
+        }
+      }
+    }
+
+    void loadTransactions()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Combine default and saved expense categories
   const availableCategories = useMemo(() => {
     const defaults = getDefaultCategories('EXPENSE')
 
@@ -139,7 +189,7 @@ export default function BudgetsPage() {
     const unique = new Map<string, string>()
 
     for (const name of [...defaults, ...custom]) {
-      const key = name.toLowerCase()
+      const key = name.trim().toLowerCase()
 
       if (!unique.has(key)) {
         unique.set(key, name)
@@ -151,17 +201,30 @@ export default function BudgetsPage() {
     )
   }, [savedCategories])
 
-  const totalBudget = useMemo(() => {
-    return budgets.reduce(
-      (total, budget) => total + toCents(budget.amount),
-      0n
-    )
-  }, [budgets])
+  // Financial progress for every budget
+  const budgetProgress = useMemo(
+    () =>
+      calculateBudgetProgress(
+        budgets,
+        transactions,
+        selectedMonth
+      ),
+    [budgets, transactions, selectedMonth]
+  )
+
+  // Summary for all budgeted categories
+  const budgetSummary = useMemo(
+    () => calculateBudgetSummary(budgetProgress),
+    [budgetProgress]
+  )
 
   const usedCategories = useMemo(
-    () => new Set(
-      budgets.map((budget) => budget.category.toLowerCase())
-    ),
+    () =>
+      new Set(
+        budgets.map((budget) =>
+          budget.category.trim().toLowerCase()
+        )
+      ),
     [budgets]
   )
 
@@ -177,6 +240,7 @@ export default function BudgetsPage() {
     setCategory('')
     setAmount('')
     setFormError('')
+    setError('')
     setSuccess('')
   }
 
@@ -311,6 +375,7 @@ export default function BudgetsPage() {
 
   return (
     <div className="min-h-screen bg-slate-50">
+      {/* Navigation */}
       <header className="border-b border-slate-200 bg-white">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5">
           <Link
@@ -320,47 +385,13 @@ export default function BudgetsPage() {
             FinanceFlow
           </Link>
 
-          <nav className="flex flex-wrap gap-5 text-sm font-medium">
-            <Link
-              to="/dashboard"
-              className="text-slate-600 hover:text-violet-700"
-            >
-              Dashboard
-            </Link>
+          <AppNavigation />
 
-            <Link
-              to="/transactions"
-              className="text-slate-600 hover:text-violet-700"
-            >
-              Transactions
-            </Link>
-
-            <Link
-              to="/categories"
-              className="text-slate-600 hover:text-violet-700"
-            >
-              Categories
-            </Link>
-
-            <Link
-              to="/analytics"
-              className="text-slate-600 hover:text-violet-700"
-            >
-              Analytics
-            </Link>
-
-            <Link
-              to="/budgets"
-              aria-current="page"
-              className="text-violet-700"
-            >
-              Budgets
-            </Link>
-          </nav>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-10">
+        {/* Page heading and month selector */}
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">
@@ -368,7 +399,7 @@ export default function BudgetsPage() {
             </h1>
 
             <p className="mt-2 text-slate-500">
-              Plan your spending by category.
+              Plan and track your spending by category.
             </p>
           </div>
 
@@ -393,10 +424,11 @@ export default function BudgetsPage() {
           </div>
         </div>
 
+        {/* Alerts */}
         {error && (
           <p
             role="alert"
-            className="mb-6 rounded-lg border border-rose-200 bg-rose-50 p-4 text-rose-700"
+            className="mb-6 rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700"
           >
             {error}
           </p>
@@ -405,35 +437,77 @@ export default function BudgetsPage() {
         {success && (
           <p
             role="status"
-            className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-emerald-700"
+            className="mb-6 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700"
           >
             {success}
           </p>
         )}
 
-        <div className="mb-8 grid gap-5 sm:grid-cols-2">
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm font-medium text-slate-500">
-              Total Monthly Budget
-            </p>
+        {/* Budget summary */}
+        {isLoading || isLoadingTransactions ? (
+          <p className="mb-8 text-sm text-slate-500">
+            Loading budget statistics...
+          </p>
+        ) : transactionsError ? (
+          <p
+            role="alert"
+            className="mb-8 rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700"
+          >
+            Spending statistics unavailable: {transactionsError}
+          </p>
+        ) : !error ? (
+          <div className="mb-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-sm font-medium text-slate-500">
+                Total Budget
+              </p>
+              <p className="mt-3 text-2xl font-bold text-violet-700">
+                {formatCents(budgetSummary.totalLimit)}
+              </p>
+            </div>
 
-            <p className="mt-3 text-3xl font-bold text-violet-700">
-              {formatCents(totalBudget)}
-            </p>
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-sm font-medium text-slate-500">
+                Total Spent
+              </p>
+              <p className="mt-3 text-2xl font-bold text-rose-600">
+                {formatCents(budgetSummary.totalSpent)}
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-sm font-medium text-slate-500">
+                Remaining
+              </p>
+              <p
+                className={`mt-3 text-2xl font-bold ${
+                  budgetSummary.totalRemaining >= 0n
+                    ? 'text-emerald-600'
+                    : 'text-rose-600'
+                }`}
+              >
+                {formatCents(budgetSummary.totalRemaining)}
+              </p>
+            </div>
+
+            <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
+              <p className="text-sm font-medium text-slate-500">
+                Over Budget
+              </p>
+              <p
+                className={`mt-3 text-2xl font-bold ${
+                  budgetSummary.exceededCount > 0
+                    ? 'text-rose-600'
+                    : 'text-slate-900'
+                }`}
+              >
+                {budgetSummary.exceededCount}
+              </p>
+            </div>
           </div>
+        ) : null}
 
-          <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-            <p className="text-sm font-medium text-slate-500">
-              Budget Categories
-            </p>
-
-            <p className="mt-3 text-3xl font-bold text-slate-900">
-              {budgets.length}
-            </p>
-          </div>
-        </div>
-
-        {/* Create / Edit Form */}
+        {/* Create / Edit Budget */}
         <section className="mb-8 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
           <h2 className="text-xl font-semibold text-slate-900">
             {editingBudget ? 'Edit Budget' : 'Create Budget'}
@@ -468,9 +542,7 @@ export default function BudgetsPage() {
                 </option>
 
                 {editingBudget &&
-                  !availableCategories.some(
-                    (item) => item === editingBudget.category
-                  ) && (
+                  !availableCategories.includes(editingBudget.category) && (
                     <option value={editingBudget.category}>
                       {editingBudget.category}
                     </option>
@@ -552,7 +624,7 @@ export default function BudgetsPage() {
           </form>
         </section>
 
-        {/* Budget List */}
+        {/* Budget List with Spending Progress */}
         <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-200 px-6 py-5">
             <h2 className="text-xl font-semibold text-slate-900">
@@ -560,13 +632,21 @@ export default function BudgetsPage() {
             </h2>
 
             <p className="mt-1 text-sm text-slate-500">
-              Manage your category spending limits.
+              Track your spending limits and progress.
             </p>
           </div>
 
-          {isLoading ? (
+          {isLoading || isLoadingTransactions ? (
             <p className="p-10 text-center text-slate-500">
-              Loading budgets...
+              Loading budgets and spending...
+            </p>
+          ) : error ? (
+            <p className="p-10 text-center text-rose-600">
+              Unable to load budgets.
+            </p>
+          ) : transactionsError ? (
+            <p className="p-10 text-center text-rose-600">
+              Unable to calculate spending: {transactionsError}
             </p>
           ) : budgets.length === 0 ? (
             <div className="p-10 text-center">
@@ -580,48 +660,137 @@ export default function BudgetsPage() {
             </div>
           ) : (
             <ul className="divide-y divide-slate-100">
-              {budgets.map((budget) => (
-                <li
-                  key={budget.id}
-                  className="flex flex-wrap items-center justify-between gap-4 px-6 py-5"
-                >
-                  <div>
-                    <h3 className="font-semibold text-slate-900">
-                      {budget.category}
-                    </h3>
+              {budgetProgress.map((item) => {
+                const budget = item.budget
 
-                    <p className="mt-1 text-sm text-slate-500">
-                      Monthly spending limit
-                    </p>
-                  </div>
+                const isExceeded = item.status === 'EXCEEDED'
+                const isWarning = item.status === 'WARNING'
 
-                  <div className="flex flex-wrap items-center gap-4">
-                    <span className="text-xl font-bold text-violet-700">
-                      {formatCents(toCents(budget.amount))}
-                    </span>
+                const progressColor = isExceeded
+                  ? 'bg-rose-500'
+                  : isWarning
+                    ? 'bg-amber-500'
+                    : 'bg-violet-600'
 
-                    <button
-                      type="button"
-                      onClick={() => startEditing(budget)}
-                      disabled={isBusy}
-                      className="cursor-pointer rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-violet-700 hover:bg-violet-50 disabled:opacity-60"
+                const statusText = isExceeded
+                  ? 'Over Budget'
+                  : isWarning
+                    ? 'Near Limit'
+                    : 'On Track'
+
+                const statusColor = isExceeded
+                  ? 'text-rose-700 bg-rose-50'
+                  : isWarning
+                    ? 'text-amber-700 bg-amber-50'
+                    : 'text-emerald-700 bg-emerald-50'
+
+                return (
+                  <li key={budget.id} className="px-6 py-6">
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          {budget.category}
+                        </h3>
+
+                        <p className="mt-1 text-sm text-slate-500">
+                          {item.transactionCount}{' '}
+                          {item.transactionCount === 1
+                            ? 'transaction'
+                            : 'transactions'}
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${statusColor}`}
+                        >
+                          {statusText}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() => startEditing(budget)}
+                          disabled={isBusy}
+                          className="cursor-pointer rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-violet-700 hover:bg-violet-50 disabled:opacity-60"
+                        >
+                          Edit
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => void handleDelete(budget)}
+                          disabled={isBusy}
+                          className="cursor-pointer rounded-lg border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 disabled:opacity-60"
+                        >
+                          {deletingId === budget.id
+                            ? 'Deleting...'
+                            : 'Delete'}
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Financial Values */}
+                    <div className="mt-5 flex flex-wrap items-end justify-between gap-3">
+                      <div>
+                        <p className="text-sm text-slate-500">
+                          Spent
+                        </p>
+
+                        <p className="mt-1 text-xl font-bold text-slate-900">
+                          {formatCents(item.spent)}
+                        </p>
+                      </div>
+
+                      <div className="text-right">
+                        <p className="text-sm text-slate-500">
+                          Monthly Limit
+                        </p>
+
+                        <p className="mt-1 text-xl font-bold text-violet-700">
+                          {formatCents(item.limit)}
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Progress Bar */}
+                    <div
+                      role="progressbar"
+                      aria-label={`${budget.category} budget usage`}
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={getProgressBarWidth(item.percentage)}
+                      aria-valuetext={`${item.percentage.toFixed(2)} percent of budget used`}
+                      className="mt-4 h-3 overflow-hidden rounded-full bg-slate-100"
                     >
-                      Edit
-                    </button>
+                      <div
+                        className={`h-full rounded-full transition-all duration-300 ${progressColor}`}
+                        style={{
+                          width: `${getProgressBarWidth(item.percentage)}%`,
+                        }}
+                      />
+                    </div>
 
-                    <button
-                      type="button"
-                      onClick={() => void handleDelete(budget)}
-                      disabled={isBusy}
-                      className="cursor-pointer rounded-lg border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 hover:bg-rose-50 disabled:opacity-60"
-                    >
-                      {deletingId === budget.id
-                        ? 'Deleting...'
-                        : 'Delete'}
-                    </button>
-                  </div>
-                </li>
-              ))}
+                    {/* Remaining Amount */}
+                    <div className="mt-3 flex flex-wrap justify-between gap-2 text-sm">
+                      <span className="text-slate-500">
+                        {item.percentage.toFixed(2)}% used
+                      </span>
+
+                      <span
+                        className={
+                          isExceeded
+                            ? 'font-semibold text-rose-600'
+                            : 'font-medium text-slate-600'
+                        }
+                      >
+                        {isExceeded
+                          ? `${formatCents(-item.remaining)} over budget`
+                          : `${formatCents(item.remaining)} remaining`}
+                      </span>
+                    </div>
+                  </li>
+                )
+              })}
             </ul>
           )}
         </section>

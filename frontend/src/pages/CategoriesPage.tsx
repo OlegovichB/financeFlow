@@ -10,6 +10,8 @@ import {
   getCategories,
 } from '../api/categories'
 
+import AppNavigation from '../components/AppNavigation'
+
 import type { Category } from '../api/categories'
 import type { TransactionType } from '../api/transactions'
 
@@ -178,36 +180,8 @@ export default function CategoriesPage() {
             FinanceFlow
           </Link>
 
-          <nav className="flex flex-wrap gap-5 text-sm font-medium">
-            <Link
-              to="/dashboard"
-              className="text-slate-600 hover:text-violet-700"
-            >
-              Dashboard
-            </Link>
+          <AppNavigation />
 
-            <Link
-              to="/transactions"
-              className="text-slate-600 hover:text-violet-700"
-            >
-              Transactions
-            </Link>
-
-            <Link
-              to="/categories"
-              aria-current="page"
-              className="text-violet-700"
-            >
-              Categories
-            </Link>
-
-            <Link
-              to="/budgets"
-              className="text-slate-600 hover:text-violet-700"
-            >
-              Budgets
-            </Link>
-          </nav>
         </div>
       </header>
 

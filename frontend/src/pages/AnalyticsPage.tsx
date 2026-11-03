@@ -12,6 +12,8 @@ import {
   calculateCategorySpending,
 } from '../utils/analytics'
 
+import AppNavigation from '../components/AppNavigation'
+
 import { formatCents } from '../utils/money'
 
 export default function AnalyticsPage() {
@@ -111,43 +113,8 @@ export default function AnalyticsPage() {
             FinanceFlow
           </Link>
 
-          <nav className="flex flex-wrap gap-5 text-sm font-medium">
-            <Link
-              to="/dashboard"
-              className="text-slate-600 hover:text-violet-700"
-            >
-              Dashboard
-            </Link>
-
-            <Link
-              to="/transactions"
-              className="text-slate-600 hover:text-violet-700"
-            >
-              Transactions
-            </Link>
-
-            <Link
-              to="/categories"
-              className="text-slate-600 hover:text-violet-700"
-            >
-              Categories
-            </Link>
-
-            <Link
-              to="/analytics"
-              aria-current="page"
-              className="text-violet-700"
-            >
-              Analytics
-            </Link>
-
-            <Link
-              to="/budgets"
-              className="text-slate-600 hover:text-violet-700"
-            >
-              Budgets
-            </Link>
-          </nav>
+          <AppNavigation />
+          
         </div>
       </header>
 
