@@ -377,7 +377,8 @@ export default function BudgetsPage() {
     <div className="min-h-screen bg-slate-50">
       {/* Navigation */}
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-5">
+        <div className="mx-auto flex max-w-6xl flex-col items-stretch gap-4 px-4 py-4 md:flex-row md:flex-wrap md:items-center md:justify-between md:px-6 md:py-5"> 
+
           <Link
             to="/dashboard"
             className="text-2xl font-bold text-violet-700"
@@ -390,7 +391,7 @@ export default function BudgetsPage() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-10">
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">
         {/* Page heading and month selector */}
         <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
@@ -456,12 +457,12 @@ export default function BudgetsPage() {
             Spending statistics unavailable: {transactionsError}
           </p>
         ) : !error ? (
-          <div className="mb-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mb-8 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
             <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <p className="text-sm font-medium text-slate-500">
                 Total Budget
               </p>
-              <p className="mt-3 text-2xl font-bold text-violet-700">
+              <p className="mt-3 text-lg font-bold break-all sm:text-2xl text-violet-700">
                 {formatCents(budgetSummary.totalLimit)}
               </p>
             </div>
@@ -470,7 +471,7 @@ export default function BudgetsPage() {
               <p className="text-sm font-medium text-slate-500">
                 Total Spent
               </p>
-              <p className="mt-3 text-2xl font-bold text-rose-600">
+              <p className="mt-3 text-lg font-bold break-all sm:text-2xl text-rose-600">
                 {formatCents(budgetSummary.totalSpent)}
               </p>
             </div>
@@ -480,7 +481,7 @@ export default function BudgetsPage() {
                 Remaining
               </p>
               <p
-                className={`mt-3 text-2xl font-bold ${
+                className={`mt-3 text-lg font-bold break-all sm:text-2xl ${
                   budgetSummary.totalRemaining >= 0n
                     ? 'text-emerald-600'
                     : 'text-rose-600'
@@ -495,7 +496,7 @@ export default function BudgetsPage() {
                 Over Budget
               </p>
               <p
-                className={`mt-3 text-2xl font-bold ${
+                className={`mt-3 text-lg font-bold break-all sm:text-2xl ${
                   budgetSummary.exceededCount > 0
                     ? 'text-rose-600'
                     : 'text-slate-900'
